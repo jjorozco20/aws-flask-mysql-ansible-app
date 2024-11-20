@@ -1,0 +1,57 @@
+- name: Configure Nginx as Load Balancer
+  hosts: all
+  become: yes
+  tasks:
+    - name: Check if nginx is available in amazon-linux-extras
+      command: amazon-linux-extras list | grep nginx
+      register: nginx_avail
+      failed_when: nginx_avail.rc != 0
+      changed_when: false
+      ignore_errors: yes
+
+    - name: Enable nginx via amazon-linux-extras
+      command: amazon-linux-extras enable nginx1
+      when: nginx_avail.rc == 0
+      changed_when: true
+
+    - name: Clean yum cache
+      command: yum clean all
+      when: nginx_avail.rc == 0
+      changed_when: true
+
+    - name: Update yum cache
+      command: yum makecache
+      when: nginx_avail.rc == 0
+      changed_when: true
+
+    - name: Install nginx
+      yum:
+        name: nginx
+        state: present
+
+    - name: Configure Nginx as load balancer
+      copy:
+        dest: /etc/nginx/conf.d/load_balancer.conf
+        content: |
+          upstream app_servers {
+              {% for ip in lookup('env', 'APP_SERVER_IPS').split(',') %}
+              server {{ ip }};
+              {% endfor %}
+          }
+
+          server {
+              listen 80;
+
+              location / {
+                  proxy_pass http://app_servers;
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              }
+          }
+
+    - name: Start and enable Nginx
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes

@@ -1,0 +1,24 @@
+version: 0.0
+os: linux
+
+# files:
+#   - source: /src/ # Don't want to copy to my ec2 whole folder
+#     destination: /home/ec2-user/flask-app/
+
+hooks:
+  BeforeInstall:
+    - location: deployment-scripts/deploy_flask_app.sh
+      timeout: 180
+      runas: ec2-user
+  AfterInstall:
+    - location: deployment-scripts/install_dependencies.sh
+      timeout: 180
+      runas: ec2-user
+  ApplicationStart:
+    - location: deployment-scripts/start_flask_app.sh
+      timeout: 180
+      runas: ec2-user
+  ApplicationStop:
+    - location: deployment-scripts/stop_flask_app.sh
+      timeout: 180
+      runas: ec2-user
