@@ -33,7 +33,7 @@ https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 
 Add the role AWSAdministratorAccess to your new user and there it is. Enable MFA to avoid people entering into your account and creating resources that may cost on you.
 
-Now that you have whole requirements, then you need to create an user and to create to it an access key to have the perms to read/write on AWS. 
+Now that you have whole requirements, then you need to go to you user and to create to it an access key to have the perms to read/write on AWS. 
 
 ---
 
@@ -68,7 +68,8 @@ Now you have whole variables defined:
 
 # If you are in windows: 
 
-## First off, remember to turn on your Docker Desktop, doesn't turn on manually
+### First off, remember to turn on your Docker Desktop, doesn't turn on manually
+
 
 # If not of if you are done with it:
 
