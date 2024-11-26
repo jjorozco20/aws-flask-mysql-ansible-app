@@ -11,6 +11,7 @@ on:
 jobs:
   validate-and-push:
     runs-on: ubuntu-latest
+    environment: devops-training
 
     steps:
     # Step 1: Checkout the repository
@@ -24,12 +25,12 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+        aws-region: ${{ vars.AWS_REGION }}
 
     # Step 4: Build and tag
     - name: Build and Tag Docker Image
       run: |
-        aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ vars.ECR_REPO }}
+        aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ vars.ECR_REPO }}
 
         # Build the Docker image
         docker build \
