@@ -45,7 +45,8 @@ jobs:
         aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ vars.ECR_REPO }}
 
         # Build the Docker image
-        docker build -f  /flask-app/Dockerfile \
+        cd /flask-app
+        docker build -f ./Dockerfile \
           --build-arg MYSQL_USER=${{ vars.MYSQL_USER }} \
           --build-arg MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
           --build-arg MYSQL_DB=${{ vars.MYSQL_DB }} \
