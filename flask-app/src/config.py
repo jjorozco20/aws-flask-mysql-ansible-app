@@ -13,7 +13,7 @@ class Config:
     SQLALCHEMY_DATABASE_URI = f'mysql+mysqlconnector://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/{MYSQL_DB}'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # SQLite config
+    # To use SQLite only (it will create a file in your folder with the name.db)
     # BASE_DIR = os.path.abspath(os.path.dirname(__file__))
     # SQLALCHEMY_DATABASE_URI = f'sqlite:///{os.path.join(BASE_DIR, "app.db")}'
     # SQLALCHEMY_TRACK_MODIFICATIONS = False

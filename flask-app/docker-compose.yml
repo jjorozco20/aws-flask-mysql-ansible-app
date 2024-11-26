@@ -1,0 +1,15 @@
+---
+# This docker-compose will create a container to test the Flask app that is going to point at your MySQL server (can be local or another docker).
+# To run it, use `docker-compose up`
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"  # Maps port 5000 on the host to port 5000 in the container
+    environment:
+      MYSQL_USER: $MYSQL_USER
+      MYSQL_PASSWORD: $MYSQL_PASSWORD
+      MYSQL_HOST: host.docker.internal
+      MYSQL_DB: $MYSQL_DB
