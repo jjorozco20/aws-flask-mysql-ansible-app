@@ -35,7 +35,6 @@ jobs:
     # Step 4: Build and Tag Docker Image
     - name: Build and Tag Docker Image
       run: |
-        REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
         aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ vars.ECR_REPO }}
         
         # Build the Docker image
