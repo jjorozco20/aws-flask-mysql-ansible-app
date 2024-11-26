@@ -22,7 +22,7 @@ jobs:
     - name: Log in to Docker Hub
       uses: docker/login-action@v2
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}
+        username: ${{ vars.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     # Step 3: Debug Dockerfile presence (helpful for debugging)
@@ -40,9 +40,9 @@ jobs:
           --build-arg MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
           --build-arg MYSQL_DB=${{ vars.MYSQL_DB }} \
           --build-arg RDS_HOST=${{ vars.RDS_HOST }} \
-          -t "${{ secrets.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}:${{ vars.IMAGE_TAG }}" ./flask-app
+          -t "${{ vars.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}:${{ vars.IMAGE_TAG }}" ./flask-app
 
     # Step 5: Push to Docker Hub
     - name: Push to Docker Hub
       run: |
-        docker push "${{ secrets.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}:${{ vars.IMAGE_TAG }}"
+        docker push "${{ vars.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}:${{ vars.IMAGE_TAG }}"
