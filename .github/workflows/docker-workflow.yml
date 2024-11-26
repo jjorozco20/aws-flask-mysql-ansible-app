@@ -42,6 +42,7 @@ jobs:
           --build-arg MYSQL_USER=${{ vars.MYSQL_USER }} \
           --build-arg MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
           --build-arg MYSQL_DB=${{ vars.MYSQL_DB }} \
+          --build-arg RDS_HOST=${{ vars.RDS_HOST }} \
           -t "${{ vars.IMAGE_NAME }}:${{ vars.IMAGE_TAG }}" ./flask-app
         
         # Tag the Docker image for ECR
