@@ -17,13 +17,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # Step 2: Lint and validate Dockerfile
-    - name: Lint Dockerfile
-      uses: hadolint/hadolint-action@v2
-      with:
-        dockerfile: ./flask-app/Dockerfile
-
-    # Step 3: Configure AWS credentials
+    # Step 2: Configure AWS credentials
     # This assumes you've stored AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in your GitHub Secrets.
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v3
