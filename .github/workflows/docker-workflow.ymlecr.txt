@@ -18,12 +18,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # Step 2: Log in to Docker Hub
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v2
+    # Step 2: Configure AWS credentials
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v3
       with:
-        username: ${{ vars.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ vars.AWS_REGION }}
 
     # Step 3: Debug Dockerfile presence (helpful for debugging)
     - name: Debug Dockerfile presence
@@ -34,15 +35,21 @@ jobs:
     # Step 4: Build and Tag Docker Image
     - name: Build and Tag Docker Image
       run: |
+        aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ vars.ECR_REPO }}
+        
         # Build the Docker image
         docker build -f ./flask-app/Dockerfile \
           --build-arg MYSQL_USER=${{ vars.MYSQL_USER }} \
           --build-arg MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
           --build-arg MYSQL_DB=${{ vars.MYSQL_DB }} \
           --build-arg RDS_HOST=${{ vars.RDS_HOST }} \
-          -t "${{ vars.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}:${{ vars.IMAGE_TAG }}" ./flask-app
+          -t "${{ vars.IMAGE_NAME }}:${{ vars.IMAGE_TAG }}" ./flask-app
+        
+        # Tag the Docker image for ECR
+        docker tag "${{ vars.IMAGE_NAME }}:${{ vars.IMAGE_TAG }}" "${{ vars.ECR_REPO }}/${{ vars.IMAGE_NAME }}:${{ vars.IMAGE_TAG }}"
 
-    # Step 5: Push to Docker Hub
-    - name: Push to Docker Hub
+    # Step 5: Push to Amazon ECR
+    - name: Push to Amazon ECR
       run: |
-        docker push "${{ vars.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}:${{ vars.IMAGE_TAG }}"
+        docker push "${{ vars.ECR_REPO }}/${{ vars.IMAGE_NAME }}:${{ vars.IMAGE_TAG }}"
+
