@@ -42,11 +42,10 @@ jobs:
     # Step 4: Build and tag
     - name: Build and Tag Docker Image
       run: |
+        REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
         aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ vars.ECR_REPO }}
 
-        # Build the Docker image
-        cd /flask-app
-        docker build -f ./Dockerfile \
+        docker build -f /$REPO_NAME/flask-app/Dockerfile \
           --build-arg MYSQL_USER=${{ vars.MYSQL_USER }} \
           --build-arg MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
           --build-arg MYSQL_DB=${{ vars.MYSQL_DB }} \
