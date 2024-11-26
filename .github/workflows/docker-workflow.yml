@@ -45,7 +45,7 @@ jobs:
         REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
         aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ vars.ECR_REPO }}
 
-        docker build -f /$REPO_NAME/flask-app/Dockerfile \
+        docker build -f /$GITHUB_WORKSPACE/flask-app/Dockerfile \
           --build-arg MYSQL_USER=${{ vars.MYSQL_USER }} \
           --build-arg MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
           --build-arg MYSQL_DB=${{ vars.MYSQL_DB }} \
