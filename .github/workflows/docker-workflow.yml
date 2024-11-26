@@ -29,13 +29,23 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ vars.AWS_REGION }}
 
+    - name: Debug Dockerfile presence
+      run: |
+        echo "Listing files in the current directory:"
+        ls -al
+
+    - name: Verify Dockerfile
+      run: |
+        echo "Looking for Dockerfile..."
+        ls -al
+
     # Step 4: Build and tag
     - name: Build and Tag Docker Image
       run: |
         aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ vars.ECR_REPO }}
 
         # Build the Docker image
-        docker build -f ./Dockerfile \
+        docker build -f  \
           --build-arg MYSQL_USER=${{ vars.MYSQL_USER }} \
           --build-arg MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
           --build-arg MYSQL_DB=${{ vars.MYSQL_DB }} \
