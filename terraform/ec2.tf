@@ -25,12 +25,17 @@ resource "aws_key_pair" "app_key" {
 # EC2 Instances
 resource "aws_instance" "app" {
   count           = 1
-  ami             = data.aws_ami.amazon_linux.id
+  ami             = "ami-0453ec754f44f9a4a"
   instance_type   = var.ec2_instance_type
   subnet_id       = aws_subnet.public_subnet_1.id
   security_groups = [aws_security_group.ec2_public_sg.id]
   key_name        = aws_key_pair.app_key.key_name
   iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
+
+  root_block_device {
+    volume_type = "gp3"
+    volume_size = var.volume_size
+  }
 
   depends_on = [aws_db_instance.mysql]
 
@@ -48,20 +53,18 @@ resource "aws_instance" "app" {
 
   provisioner "local-exec" {
     command = <<-EOT
-      docker run --rm `
-        -v "${path.cwd}/provisioning/deploy_docker.yml:/ansible/playbook.yml" `
-        -v "${path.cwd}/ssh_key:/root/.ssh/id_rsa" `
-        -e ANSIBLE_HOST_KEY_CHECKING=False `
-        -e DB_ENDPOINT="${aws_db_instance.mysql.endpoint}" `
-        williamyeh/ansible:alpine3 `
-        sh -c "chmod 600 /root/.ssh/id_rsa && ansible-playbook -i '${self.public_ip},' /ansible/playbook.yml -u ec2-user"
+      sleep 60
+      export ANSIBLE_HOST_KEY_CHECKING=False
+      export DB_ENDPOINT="${aws_db_instance.mysql.endpoint}"
+      chmod 600 ${path.cwd}/ssh_key
+      ansible-playbook -i '${self.public_ip},' ${path.cwd}/provisioning/deploy_docker.yml --private-key ${path.cwd}/ssh_key -u ec2-user
     EOT
-    interpreter = ["powershell", "-Command"]
   }
+
 
   connection {
     type        = "ssh"
-    user        = var.ec2_user
+    user        = "ec2-user"
     private_key = tls_private_key.ssh_key.private_key_pem
     host        = self.public_ip
   }

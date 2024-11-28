@@ -48,18 +48,6 @@ variable "db_password" {
   default     = "em7admin"
 }
 
-# Data source for Amazon Linux 2 AMI
-data "aws_ami" "amazon_linux" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
-  }
-
-  owners = ["amazon"]  # Amazon's official account ID
-}
-
 variable "aws_access_key" {
   description = "AWS Access Key"
   type        = string
@@ -128,4 +116,10 @@ variable "ecr_repo_name" {
   description = "ECR repository name"
   type        = string
   default     = "flask-mysql-app"
+}
+
+variable "volume_size" {
+  description = "Size of the EBS volume in GiB"
+  type        = number
+  default     = 100 # Minimum free-tier eligible volume size
 }
