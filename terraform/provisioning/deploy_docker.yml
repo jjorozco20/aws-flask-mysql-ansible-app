@@ -1,0 +1,50 @@
+---
+- name: Setup Docker on Amazon Linux 2
+  hosts: all
+  become: true
+  gather_facts: yes
+
+  vars:
+    docker_image_tag: "latest"
+    docker_image_name: "jjorozco20/flask-mysql-app"  # Docker Hub public image name
+    db_endpoint: "{{ lookup('env', 'DB_ENDPOINT') }}"
+    app_name: "{{ docker_image_name.split('/')[-1] }}"
+    
+  tasks:
+    - name: Validate Docker image URL environment variable
+      debug:
+        msg: "DOCKER_IMAGE={{ docker_image_name }}:{{ docker_image_tag }}"
+      failed_when: docker_image_name == ""
+      changed_when: false
+
+    - name: Install Docker
+      yum:
+        name: docker
+        state: present
+
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Pull Docker image from Docker Hub
+      shell: "docker pull {{ docker_image_name }}:{{ docker_image_tag }}"
+      register: docker_pull
+      failed_when: docker_pull.rc != 0
+      changed_when: true
+
+    - name: Verify Docker image is pulled
+      shell: "docker images | grep {{ docker_image_name | regex_replace('^.*/', '') }}"
+      register: image_check
+      ignore_errors: yes
+
+    - name: Run the Docker container
+      shell: |
+        docker run -d \
+          -e MYSQL_HOST={{ db_endpoint }} \
+          -p 5000:5000 \
+          {{ docker_image_name }}:{{ docker_image_tag }} {{ app_name }}
+      register: docker_run
+      failed_when: docker_run.rc != 0
+      changed_when: true
