@@ -61,6 +61,7 @@ zone_name      = "example.com" # Required, not implemented yet, leave it as that
 record_name    = "test-app"    # Required, not implemented yet, leave it as that, it is for Route 53
 codedeploy_app = "FLASK APP NAME"
 deploy_group_name = "DEPLOYMENT GROUP"
+# ecr_repo_name = "ECR REPO NAME" DISABLED FOR NOW, using Docker Hub
 
 ```
 

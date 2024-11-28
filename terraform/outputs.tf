@@ -6,16 +6,8 @@ output "public_subnet_1_id" {
   value = aws_subnet.public_subnet_1.id
 }
 
-output "public_subnet_2_id" {
-  value = aws_subnet.public_subnet_2.id
-}
-
 output "private_subnet_1_id" {
   value = aws_subnet.private_subnet_1.id
-}
-
-output "private_subnet_2_id" {
-  value = aws_subnet.private_subnet_2.id
 }
 
 output "db_endpoint" {
@@ -28,9 +20,9 @@ output "ec2_public_ips" {
 }
 
 # Output public IPs of all EC2 instances
-output "lb_public_ip" {
-  value = aws_instance.load_balancer.public_ip
-}
+# output "lb_public_ip" {
+#   value = aws_instance.load_balancer.public_ip
+# }
 
 # Output the public key file path
 output "ssh_public_key_file" {

@@ -39,25 +39,13 @@ variable "db_name" {
 variable "db_user" {
   description = "Database username"
   type        = string
-  default     = "em7admin"
+  default     = "root"
 }
 
 variable "db_password" {
   description = "Database password"
   type        = string
   default     = "em7admin"
-}
-
-# Data source for Amazon Linux 2 AMI
-data "aws_ami" "amazon_linux" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
-  }
-
-  owners = ["amazon"]  # Amazon's official account ID
 }
 
 variable "aws_access_key" {
@@ -94,6 +82,12 @@ variable "rds_instance_type" {
   default     = "db.t3.micro"
 }
 
+variable "rds_identifier" {
+  description = "RDS identifier"
+  type        = string
+  default     = "mysql1-5161515"
+}
+
 variable "rds_engine_type" {
   description = "RDS engine type"
   type        = string
@@ -116,4 +110,16 @@ variable "instaces_number" {
   description = "How many App Servers do you want to create"
   type        = number
   default     = 2
+}
+
+variable "ecr_repo_name" {
+  description = "ECR repository name"
+  type        = string
+  default     = "flask-mysql-app"
+}
+
+variable "volume_size" {
+  description = "Size of the EBS volume in GiB"
+  type        = number
+  default     = 100 # Minimum free-tier eligible volume size
 }

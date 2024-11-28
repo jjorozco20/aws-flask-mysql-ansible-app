@@ -28,18 +28,6 @@ resource "aws_subnet" "public_subnet_1" {
   }
 }
 
-# Public Subnet 2
-resource "aws_subnet" "public_subnet_2" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = "10.0.2.0/24"
-  map_public_ip_on_launch = true
-  availability_zone       = "us-east-1b"
-
-  tags = {
-    Name = "public-subnet-2"
-  }
-}
-
 # Private Subnet 1
 resource "aws_subnet" "private_subnet_1" {
   vpc_id            = aws_vpc.main.id
@@ -83,13 +71,7 @@ resource "aws_route_table_association" "public_subnet_1_association" {
   route_table_id = aws_route_table.public_route_table.id
 }
 
-# Associate Public Subnet 2 with the Route Table
-resource "aws_route_table_association" "public_subnet_2_association" {
-  subnet_id      = aws_subnet.public_subnet_2.id
-  route_table_id = aws_route_table.public_route_table.id
-}
-
-# Public Security Group for EC2 allowing traffic on port 22 (SSH) and 80 (Flask)
+# Public Security Group for EC2 allowing traffic on port 22 (SSH) and 5000 (Flask)
 resource "aws_security_group" "ec2_public_sg" {
   vpc_id      = aws_vpc.main.id
   description = "Allow inbound traffic for Flask app on EC2 instances"
@@ -102,10 +84,10 @@ resource "aws_security_group" "ec2_public_sg" {
     cidr_blocks = ["0.0.0.0/0"]  # Allow SSH from anywhere (for testing, adjust in production)
   }
 
-  # Allow HTTP (Port 80) from anywhere
+  # Allow HTTP (Port 5000) from anywhere
   ingress {
-    from_port   = 80
-    to_port     = 80
+    from_port   = 5000
+    to_port     = 5000
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]  # Open to all IPs for testing purposes; restrict in production.
   }
