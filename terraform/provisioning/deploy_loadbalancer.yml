@@ -1,65 +1,56 @@
-- name: Configure Nginx as Load Balancer
+---
+- name: Configure NGINX Load Balancer
   hosts: all
-  become: yes
+  become: true
+  gather_facts: yes
+
+  vars:
+    app_server_ips: "{{ lookup('env', 'APP_SERVER_IPS').split(',') }}"
+
   tasks:
-    - name: Check if nginx is available in amazon-linux-extras
-      command: amazon-linux-extras list | grep nginx
-      register: nginx_avail
-      failed_when: nginx_avail.rc != 0
-      changed_when: false
-      ignore_errors: yes
-
-    - name: Enable nginx via amazon-linux-extras
-      command: amazon-linux-extras enable nginx1
-      when: nginx_avail.rc == 0
-      changed_when: true
-
-    - name: Clean yum cache
-      command: yum clean all
-      when: nginx_avail.rc == 0
-      changed_when: true
-
-    - name: Update yum cache
-      command: yum makecache
-      when: nginx_avail.rc == 0
-      changed_when: true
-
-    - name: Install nginx
-      yum:
+    - name: Install NGINX
+      ansible.builtin.yum:
         name: nginx
         state: present
 
-    - name: Configure Nginx as load balancer
-      copy:
-        dest: /etc/nginx/conf.d/load_balancer.conf
+    - name: Configure NGINX for load balancing
+      ansible.builtin.copy:
+        dest: /etc/nginx/nginx.conf
         content: |
-          upstream app_servers {
-              {% for ip in lookup('env', 'APP_SERVER_IPS').split(',') %}
-              server {{ ip }} max_fails=3 fail_timeout=30s;
+          user nginx;
+          worker_processes auto;
+
+          events {
+              worker_connections 1024;
+          }
+
+          http {
+              upstream flask_app {
+              {% for ip in app_server_ips %}
+                  server {{ ip }}:5000;
               {% endfor %}
-          }
-
-          server {
-              listen 80;
-
-              location / {
-                  proxy_pass http://app_servers;
-                  proxy_set_header Host $host;
-                  proxy_set_header X-Real-IP $remote_addr;
-                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-                  # Health check fallback to next server
-                  proxy_next_upstream error timeout http_502 http_503 http_504;
               }
 
-              location /health {
-                  proxy_pass http://app_servers;
-                  proxy_set_header Host $host;
+              server {
+                  listen 80;
+                  location / {
+                      proxy_pass http://flask_app;
+                      proxy_set_header Host $host;
+                      proxy_set_header X-Real-IP $remote_addr;
+                      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  }
               }
           }
+        owner: root
+        group: root
+        mode: "0644"
 
-    - name: Start and enable Nginx
-      systemd:
+    - name: Test NGINX configuration
+      ansible.builtin.command:
+        cmd: nginx -t
+
+    - name: Restart NGINX
+      ansible.builtin.service:
         name: nginx
-        state: started
-        enabled: yes
+        state: restarted
+        enabled: true
