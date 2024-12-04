@@ -24,7 +24,7 @@ resource "aws_key_pair" "app_key" {
 
 # EC2 Instances
 resource "aws_instance" "app" {
-  count           = 1
+  count           = 2
   ami             = "ami-0453ec754f44f9a4a"
   instance_type   = var.ec2_instance_type
   subnet_id       = aws_subnet.public_subnet_1.id
@@ -70,43 +70,43 @@ resource "aws_instance" "app" {
   }
 }
 
-# resource "aws_instance" "load_balancer" {
-#   ami             = data.aws_ami.amazon_linux.id
-#   instance_type   = var.ec2_instance_type
-#   subnet_id       = aws_subnet.public_subnet_1.id
-#   security_groups = [aws_security_group.ec2_public_sg.id]
-#   key_name        = aws_key_pair.app_key.key_name
-#   iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
+resource "aws_instance" "load_balancer" {
+  ami             = data.aws_ami.amazon_linux.id
+  instance_type   = var.ec2_instance_type
+  subnet_id       = aws_subnet.public_subnet_1.id
+  security_groups = [aws_security_group.ec2_public_sg.id]
+  key_name        = aws_key_pair.app_key.key_name
+  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
 
-#   tags = {
-#     Name = "load-balancer"
-#     Role = "LoadBalancer"
-#   }
+  tags = {
+    Name = "load-balancer"
+    Role = "LoadBalancer"
+  }
 
-#   lifecycle {
-#     ignore_changes = [
-#       security_groups,
-#       ami
-#     ]
-#   }
+  lifecycle {
+    ignore_changes = [
+      security_groups,
+      ami
+    ]
+  }
 
-#   provisioner "local-exec" {
-#     command = <<-EOT
-#       docker run --rm `
-#         -v "${path.cwd}/provisioning/deploy_loadbalancer.yml:/ansible/playbook.yml" `
-#         -v "${path.cwd}/ssh_key:/root/.ssh/id_rsa" `
-#         -e ANSIBLE_HOST_KEY_CHECKING=False `
-#         -e APP_SERVER_IPS='${join(",", aws_instance.app[*].public_ip)}' `
-#         williamyeh/ansible:alpine3 `
-#         sh -c "chmod 600 /root/.ssh/id_rsa && ansible-playbook -i '${self.public_ip},' /ansible/playbook.yml -u ec2-user"
-#     EOT
-#     interpreter = ["powershell", "-Command"]
-#   }
+  provisioner "local-exec" {
+    command = <<-EOT
+      docker run --rm `
+        -v "${path.cwd}/provisioning/deploy_loadbalancer.yml:/ansible/playbook.yml" `
+        -v "${path.cwd}/ssh_key:/root/.ssh/id_rsa" `
+        -e ANSIBLE_HOST_KEY_CHECKING=False `
+        -e APP_SERVER_IPS='${join(",", aws_instance.app[*].public_ip)}' `
+        williamyeh/ansible:alpine3 `
+        sh -c "chmod 600 /root/.ssh/id_rsa && ansible-playbook -i '${self.public_ip},' /ansible/playbook.yml -u ec2-user"
+    EOT
+    interpreter = ["powershell", "-Command"]
+  }
 
-#   connection {
-#     type        = "ssh"
-#     user        = var.ec2_user
-#     private_key = tls_private_key.ssh_key.private_key_pem
-#     host        = self.public_ip
-#   }
-# }
+  connection {
+    type        = "ssh"
+    user        = var.ec2_user
+    private_key = tls_private_key.ssh_key.private_key_pem
+    host        = self.public_ip
+  }
+}

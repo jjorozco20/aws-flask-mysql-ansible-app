@@ -20,9 +20,9 @@ output "ec2_public_ips" {
 }
 
 # Output public IPs of all EC2 instances
-# output "lb_public_ip" {
-#   value = aws_instance.load_balancer.public_ip
-# }
+output "lb_public_ip" {
+  value = aws_instance.load_balancer.public_ip
+}
 
 # Output the public key file path
 output "ssh_public_key_file" {

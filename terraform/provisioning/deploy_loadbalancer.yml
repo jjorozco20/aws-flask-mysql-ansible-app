@@ -35,7 +35,7 @@
         content: |
           upstream app_servers {
               {% for ip in lookup('env', 'APP_SERVER_IPS').split(',') %}
-              server {{ ip }};
+              server {{ ip }} max_fails=3 fail_timeout=30s;
               {% endfor %}
           }
 
@@ -47,6 +47,14 @@
                   proxy_set_header Host $host;
                   proxy_set_header X-Real-IP $remote_addr;
                   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+                  # Health check fallback to next server
+                  proxy_next_upstream error timeout http_502 http_503 http_504;
+              }
+
+              location /health {
+                  proxy_pass http://app_servers;
+                  proxy_set_header Host $host;
               }
           }
 
