@@ -36,11 +36,17 @@ create_database()
 with app.app_context():
     db.create_all()
 
+# Function to get the server's IP address
+def get_server_ip():
+    hostname = socket.gethostname()
+    ip_address = socket.gethostbyname(hostname)
+    return ip_address
+
 # Home Page: Display All Items
 @app.route('/')
 def index():
-    # Get the IP address of the server
-    server_ip = request.host.split(':')[0]  # Extracts the IP from the host string
+    # Get the server IP
+    server_ip = get_server_ip()
 
     try:
         # Query all items in the database
@@ -48,6 +54,7 @@ def index():
         return render_template('index.html', items=items, server_ip=server_ip)
     except Exception as e:
         return f"Database connection failed: {str(e)}"
+
 
 # Create: Add a New Item
 @app.route('/add', methods=['GET', 'POST'])
