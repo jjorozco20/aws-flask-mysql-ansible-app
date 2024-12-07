@@ -84,6 +84,14 @@ resource "aws_security_group" "ec2_public_sg" {
     cidr_blocks = ["0.0.0.0/0"]  # Allow SSH from anywhere (for testing, adjust in production)
   }
 
+  ingress {
+    description = "Allow NGINX"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # Allow traffic from anywhere
+  }
+
   # Allow HTTP (Port 5000) from anywhere
   ingress {
     from_port   = 5000

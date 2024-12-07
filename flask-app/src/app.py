@@ -39,11 +39,13 @@ with app.app_context():
 # Home Page: Display All Items
 @app.route('/')
 def index():
-    # Check if the database connection is working and fetch items
+    # Get the IP address of the server
+    server_ip = request.host.split(':')[0]  # Extracts the IP from the host string
+
     try:
         # Query all items in the database
         items = Item.query.all()
-        return render_template('index.html', items=items)
+        return render_template('index.html', items=items, server_ip=server_ip)
     except Exception as e:
         return f"Database connection failed: {str(e)}"
 
