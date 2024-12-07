@@ -7,16 +7,6 @@ app = Flask(__name__)
 app.config.from_object(config.Config)  # Use the Config class from config.py
 db.init_app(app)
 
-@app.before_request
-def get_real_client_ip():
-    # For example, using the X-Forwarded-For header
-    client_ip = request.headers.get('X-Forwarded-For')
-    if client_ip:
-        return client_ip.split(',')[0]  # Get the first IP in the header
-    else:
-        return request.remote_addr  # Fallback to the direct IP
-
-
 # Create the database if it doesn't exist
 def create_database():
     try:
