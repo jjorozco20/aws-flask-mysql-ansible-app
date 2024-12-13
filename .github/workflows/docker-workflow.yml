@@ -1,4 +1,4 @@
-name: Docker Workflow
+name: Terraform Workflow
 
 on:
   push:
@@ -9,9 +9,8 @@ on:
       - main
 
 jobs:
-  validate-and-push:
+  terraform:
     runs-on: ubuntu-latest
-    environment: devops-training
 
     steps:
     # Step 1: Checkout the repository
@@ -20,31 +19,33 @@ jobs:
       with:
         path: ./flask-app  # Specify if your code is in a subdirectory
 
-    # Step 2: Log in to Docker Hub
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v2
+    # Step 2: Install Terraform
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
       with:
-        username: ${{ vars.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+        terraform_version: latest
 
-    # Step 3: Debug Dockerfile presence (helpful for debugging)
-    - name: Debug Dockerfile presence
-      run: |
-        echo "Listing files in the flask-app directory:"
-        ls -al ./flask-app  # List files in the 'flask-app' directory
+    # Step 3: Navigate to Terraform Directory
+    - name: Change Directory to Terraform
+      run: cd terraform
 
-    # Step 4: Build and Tag Docker Image
-    - name: Build and Tag Docker Image
-      run: |
-        # Build the Docker image
-        docker build -f ./flask-app/Dockerfile \
-          --build-arg MYSQL_USER=${{ vars.MYSQL_USER }} \
-          --build-arg MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
-          --build-arg MYSQL_DB=${{ vars.MYSQL_DB }} \
-          --build-arg RDS_HOST=${{ vars.RDS_HOST }} \
-          -t "${{ vars.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}:${{ vars.IMAGE_TAG }}" ./flask-app
+    # Step 4: Initialize Terraform
+    - name: Terraform Init
+      working-directory: terraform
+      run: terraform init
 
-    # Step 5: Push to Docker Hub
-    - name: Push to Docker Hub
-      run: |
-        docker push "${{ vars.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}:${{ vars.IMAGE_TAG }}"
+    # Step 5: Plan Terraform Changes
+    - name: Terraform Plan
+      working-directory: terraform
+      run: terraform plan
+
+    # Step 6: Wait for Manual Approval
+    - name: Await Approval
+      uses: hmarr/auto-approve-action@v2
+      with:
+        require-approval: true
+
+    # Step 7: Apply Terraform Changes
+    - name: Terraform Apply
+      working-directory: terraform
+      run: terraform apply -auto-approve
