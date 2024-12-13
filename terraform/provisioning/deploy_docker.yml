@@ -1,5 +1,5 @@
 ---
-- name: Setup Docker on Amazon Linux 2023
+- name: Setup Docker, Terraform v1.10.0, and AWS CLI on Amazon Linux 2023
   hosts: all
   become: true
   gather_facts: yes
@@ -7,6 +7,7 @@
   vars:
     db_endpoint_full: "{{ lookup('env', 'DB_ENDPOINT') }}"
     db_endpoint: "{{ db_endpoint_full.split(':')[0] }}"
+    terraform_version: "1.10.0"
 
   tasks:
     - name: Update all packages
@@ -31,35 +32,37 @@
         groups: docker
         append: true
 
-    - name: Install Docker Compose
+    - name: Download Terraform
       get_url:
-        url: "https://github.com/docker/compose/releases/download/v2.17.3/docker-compose-{{ ansible_system | lower }}-{{ ansible_architecture }}"
-        dest: /usr/local/bin/docker-compose
-        mode: "0755"
+        url: "https://releases.hashicorp.com/terraform/{{ terraform_version }}/terraform_{{ terraform_version }}_linux_amd64.zip"
+        dest: /tmp/terraform.zip
 
-    - name: Create Docker Compose file
-      copy:
-        dest: /home/ec2-user/docker-compose.yml
-        content: |
-          ---
-          services:
-            app:
-              image: jjorozco20/flask-mysql-app
-              ports:
-                - "5000:5000"  # Maps port 5000 on the host to port 5000 in the container
-              environment:
-                MYSQL_HOST: "{{ db_endpoint }}"
+    - name: Unzip Terraform binary
+      unarchive:
+        src: /tmp/terraform.zip
+        dest: /usr/local/bin/
+        remote_src: yes
+
+    - name: Ensure Terraform is executable
+      file:
+        path: /usr/local/bin/terraform
+        mode: '0755'
+
+    - name: Verify Terraform installation
+      shell: "terraform version"
+      register: terraform_version_output
+
+    - name: Install AWS CLI
+      package:
+        name: aws-cli
+        state: present
+
     - name: Run the Docker container
-      shell: |
-        docker run -d \
-          -e MYSQL_HOST={{ db_endpoint }} \
-          -p 5000:5000 \
-          jjorozco20/flask-mysql-app:latest
-      register: docker_run
-      failed_when: docker_run.rc != 0
-      changed_when: true
-
-    # - name: Run Docker Compose to start the app
-    #   command: docker-compose -f /home/ec2-user/docker-compose.yml up -d
-    #   args:
-    #     chdir: /home/ec2-user
+      community.docker.docker_container:
+        name: flask-mysql-app
+        image: jjorozco20/flask-mysql-app:latest
+        state: started
+        published_ports:
+          - "5000:5000"
+        env:
+          MYSQL_HOST: "{{ db_endpoint }}"
