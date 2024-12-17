@@ -24,7 +24,7 @@ resource "aws_key_pair" "app_key" {
 
 # EC2 Instances
 resource "aws_instance" "app" {
-  count           = 2
+  count           = 3
   ami             = "ami-0453ec754f44f9a4a"
   instance_type   = var.ec2_instance_type
   subnet_id       = aws_subnet.public_subnet_1.id

@@ -7,6 +7,16 @@ app = Flask(__name__)
 app.config.from_object(config.Config)  # Use the Config class from config.py
 db.init_app(app)
 
+@app.before_request
+def get_real_client_ip():
+    # For example, using the X-Forwarded-For header
+    client_ip = request.headers.get('X-Forwarded-For')
+    if client_ip:
+        return client_ip.split(',')[0]  # Get the first IP in the header
+    else:
+        return request.remote_addr  # Fallback to the direct IP
+
+
 # Create the database if it doesn't exist
 def create_database():
     try:
@@ -36,11 +46,17 @@ create_database()
 with app.app_context():
     db.create_all()
 
+# Function to get the server's IP address
+def get_server_ip():
+    hostname = socket.gethostname()
+    ip_address = socket.gethostbyname(hostname)
+    return ip_address
+
 # Home Page: Display All Items
 @app.route('/')
 def index():
-    # Get the IP address of the server
-    server_ip = request.host.split(':')[0]  # Extracts the IP from the host string
+    # Get the server IP
+    server_ip = get_server_ip()
 
     try:
         # Query all items in the database
@@ -48,6 +64,7 @@ def index():
         return render_template('index.html', items=items, server_ip=server_ip)
     except Exception as e:
         return f"Database connection failed: {str(e)}"
+
 
 # Create: Add a New Item
 @app.route('/add', methods=['GET', 'POST'])
