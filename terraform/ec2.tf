@@ -51,20 +51,20 @@ resource "aws_instance" "app" {
     ]
   }
 
-  provisioner "local-exec" {
-    command = <<-EOT
-      sleep 60
-      export ANSIBLE_HOST_KEY_CHECKING=False
-      export DB_ENDPOINT="${aws_db_instance.mysql.endpoint}"
-      chmod 600 ${path.cwd}/ssh_key
-      ansible-playbook -i '${self.public_ip},' ${path.cwd}/provisioning/deploy_docker.yml --private-key ${path.cwd}/ssh_key -u ec2-user
-    EOT
-  }
-
+  # This is commented due to pipeline purposes, Terraform Cloud cannot run ansible-playbooks.
+  # provisioner "local-exec" {
+  #   command = <<-EOT
+  #     sleep 20
+  #     export ANSIBLE_HOST_KEY_CHECKING=False
+  #     export DB_ENDPOINT="${aws_db_instance.mysql.endpoint}"
+  #     chmod 600 ${path.cwd}/ssh_key
+  #     ansible-playbook -i '${self.public_ip},' ${path.cwd}/provisioning/deploy_docker.yml --private-key ${path.cwd}/ssh_key -u ec2-user
+  #   EOT
+  # }
 
   connection {
     type        = "ssh"
-    user        = "ec2-user"
+    user        = var.ec2_user
     private_key = tls_private_key.ssh_key.private_key_pem
     host        = self.public_ip
   }
@@ -89,17 +89,17 @@ resource "aws_instance" "load_balancer" {
       ami
     ]
   }
-
-  provisioner "local-exec" {
-    command = <<-EOT
-      sleep 60
-      export ANSIBLE_HOST_KEY_CHECKING=False
-      export APP_SERVER_IPS='${join(",", aws_instance.app[*].public_ip)}'
-      chmod 600 ${path.cwd}/ssh_key
-      ansible-playbook -i '${self.public_ip},' ${path.cwd}/provisioning/deploy_loadbalancer.yml --private-key ${path.cwd}/ssh_key -u ec2-user
-    EOT
-  }
-
+  
+  # This is commented due to pipeline purposes, Terraform Cloud cannot run ansible-playbooks.
+  # provisioner "local-exec" {
+  #   command = <<-EOT
+  #     sleep 20
+  #     export ANSIBLE_HOST_KEY_CHECKING=False
+  #     export APP_SERVER_IPS='${join(",", aws_instance.app[*].public_ip)}'
+  #     chmod 600 ${path.cwd}/ssh_key
+  #     ansible-playbook -i '${self.public_ip},' ${path.cwd}/provisioning/deploy_loadbalancer.yml --private-key ${path.cwd}/ssh_key -u ec2-user
+  #   EOT
+  # }
 
   connection {
     type        = "ssh"

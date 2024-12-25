@@ -1,19 +1,21 @@
+# This resources are commented because CodeDeploy is no longer used as the app deployer. 
+# Docker is being used to containerize the app.
 # Define the IAM Role for EC2 instances (with permission to use CodeDeploy)
-# resource "aws_iam_role" "ec2_codedeploy_role" {
-#   name               = "ec2_codedeploy_role"
-#   assume_role_policy = jsonencode({
-#     "Version": "2012-10-17",
-#     "Statement": [
-#       {
-#         "Effect": "Allow",
-#         "Principal": {
-#           "Service": "ec2.amazonaws.com"
-#         },
-#         "Action": "sts:AssumeRole"
-#       }
-#     ]
-#   })
-# }
+resource "aws_iam_role" "ec2_codedeploy_role" {
+  name               = "ec2_codedeploy_role"
+  assume_role_policy = jsonencode({
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Principal": {
+          "Service": "ec2.amazonaws.com"
+        },
+        "Action": "sts:AssumeRole"
+      }
+    ]
+  })
+}
 
 # Attach the AmazonEC2RoleforCodeDeploy policy to allow EC2 instances to interact with CodeDeploy
 # resource "aws_iam_role_policy_attachment" "codedeploy" {

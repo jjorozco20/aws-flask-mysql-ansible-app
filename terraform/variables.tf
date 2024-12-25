@@ -1,9 +1,29 @@
+# Hello, you may notice that some variables are commented. 
+# This is in spite of not being able to use those AWS resources within the Free Tier account. 
+# They can work, but you are going to be charged if you uncomment them.
+# Be aware of it and proceed with caution when uncommenting them.
+
+# AWS Config Variables
 variable "region" {
   description = "AWS region"
   type        = string
   default     = "us-east-1"
 }
 
+variable "aws_access_key" {
+  description = "AWS Access Key"
+  type        = string
+  sensitive   = true
+}
+
+variable "aws_secret_key" {
+  description = "AWS Secret Key"
+  type        = string
+  sensitive   = true
+}
+# -------------------
+
+#VPC VARIABLES
 variable "vpc_cidr" {
   description = "VPC CIDR block"
   type        = string
@@ -21,19 +41,13 @@ variable "private_subnet_cidr" {
   type        = string
   default     = "10.0.2.0/24"
 }
-
-# EC2 Instance variables
-variable "ec2_instance_type" {
-  description = "EC2 instance type"
-  type        = string
-  default     = "t2.micro"
-}
+# -------------------
 
 # RDS variables
 variable "db_name" {
   description = "Database name"
   type        = string
-  default     = "app_db"
+  default     = "test_db"
 }
 
 variable "db_user" {
@@ -45,35 +59,7 @@ variable "db_user" {
 variable "db_password" {
   description = "Database password"
   type        = string
-  default     = "em7admin"
-}
-
-variable "aws_access_key" {
-  description = "AWS Access Key"
-  type        = string
-  sensitive   = true
-}
-
-variable "aws_secret_key" {
-  description = "AWS Secret Key"
-  type        = string
-  sensitive   = true
-}
-
-variable "zone_name" {
-  description = "The domain name for the Route 53 hosted zone"
-}
-
-variable "record_name" {
-  description = "The name of the record"
-}
-
-variable "codedeploy_app" {
-  description = "The app name for the CodeDeploy app"
-}
-
-variable "deploy_group_name" {
-  description = "Name of the app deployment group"
+  default     = "adminpassword"
 }
 
 variable "rds_instance_type" {
@@ -99,11 +85,19 @@ variable "rds_engine_version" {
   type        = string
   default     = "8.0.32"
 }
+# -------------------
+
+# EC2 Instance variables
+variable "ec2_instance_type" {
+  description = "EC2 instance type"
+  type        = string
+  default     = "t2.micro"
+}
 
 variable "ec2_user" {
-  description = "RDS engine version"
+  description = "EC2 User"
   type        = string
-  default     = "8.0.32"
+  default     = "ec2-user"
 }
 
 variable "instaces_number" {
@@ -112,14 +106,41 @@ variable "instaces_number" {
   default     = 2
 }
 
-variable "ecr_repo_name" {
-  description = "ECR repository name"
-  type        = string
-  default     = "flask-mysql-app"
-}
-
 variable "volume_size" {
-  description = "Size of the EBS volume in GiB"
-  type        = number
-  default     = 100 # Minimum free-tier eligible volume size
-}
+   description = "Size of the EC2 volume in GiB"
+   type        = number
+   default     = 100 # Minimum free-tier eligible volume size
+ }
+# -------------------
+
+# ECR Variables
+
+# This is within Free tier, but I am using DockerHub instead of it.
+# variable "ecr_repo_name" {
+#   description = "ECR repository name"
+#   type        = string
+#   default     = "flask-mysql-app"
+# }
+# -------------------
+
+# Route 53 Variables
+# variable "zone_name" {
+#   description = "The domain name for the Route 53 hosted zone"
+# }
+
+# variable "record_name" {
+#   description = "The name of the record"
+# }
+# -------------------
+
+# CodeDeploy Variables
+
+# This is within Free tier, but I am using a Dockerfile and Ansible to deliver the app.
+# variable "codedeploy_app" {
+#   description = "The app name for the CodeDeploy app"
+# }
+
+# variable "deploy_group_name" {
+#   description = "Name of the app deployment group"
+# }
+# -------------------
